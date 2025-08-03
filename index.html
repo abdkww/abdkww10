@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تطبيق تحضير الدروس المتقدم - الإصدار المحسّن</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.rawgit.com/TalAter/annyang/master/annyang.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #2c3e50, #3498db);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, #ff8a00, #e52e71, #22c1c3, #1a2a6c);
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .app-icon {
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+      margin: 0 auto 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 2.2rem;
+      position: relative;
+      padding-bottom: 15px;
+    }
+
+    h1::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 4px;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      border-radius: 2px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+      color: #2c3e50;
+      font-size: 1.05rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    textarea, input {
+      width: 100%;
+      padding: 14px 50px 14px 14px;
+      margin-bottom: 5px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f9f9f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    textarea:focus, input:focus {
+      border-color: #3498db;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+      outline: none;
+    }
+
+    .mic-btn {
+      position: absolute;
+      left: 10px;
+      bottom: 12px;
+      background: #3498db;
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .mic-btn:hover {
+      background: #2980b9;
+      transform: scale(1.05);
+    }
+
+    .mic-btn.recording {
+      background: #e74c3c;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 17px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .export-btn {
+      background: linear-gradient(135deg, #27ae60, #219653);
+      color: white;
+    }
+
+    .export-btn:hover {
+      background: linear-gradient(135deg, #219653, #1b7944);
+    }
+
+    .clear-btn {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+    }
+
+    .clear-btn:hover {
+      background: linear-gradient(135deg, #c0392b, #a23526);
+    }
+
+    .save-btn {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      grid-column: span 2;
+    }
+
+    .save-btn:hover {
+      background: linear-gradient(135deg, #2980b9, #2573a7);
+    }
+
+    .footer {
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 15px;
+      min-height: 24px;
+      font-size: 14px;
+      color: #27ae60;
+      font-weight: 500;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+
+    .mic-instruction {
+      text-align: center;
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 15px;
+      color: #0d47a1;
+      border: 1px solid #bbdefb;
+      line-height: 1.6;
+    }
+
+    .mic-instruction i {
+      margin-left: 5px;
+      color: #e74c3c;
+    }
+
+    .solution-box {
+      background: #fff8e1;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid #ffecb3;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .solution-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      color: #ff8f00;
+    }
+    
+    .solution-header i {
+      font-size: 24px;
+      margin-left: 10px;
+    }
+    
+    .solution-steps {
+      padding-right: 20px;
+    }
+    
+    .solution-steps li {
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    
+    .alternative-option {
+      background: #e8f5e9;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid #c8e6c9;
+    }
+    
+    .alt-btn {
+      background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+      color: white;
+      margin-top: 15px;
+    }
+    
+    .alt-btn:hover {
+      background: linear-gradient(135deg, #7b1fa2, #6a1b9a);
+    }
+
+    /* تصميم متجاوب */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+      
+      .save-btn {
+        grid-column: span 1;
+      }
+      
+      .app-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+      }
+      
+      .solution-box, .alternative-option {
+        padding: 15px;
+      }
+    }
+
+    /* رسوميات إضافية */
+    .decoration {
+      position: absolute;
+      opacity: 0.1;
+      z-index: 0;
+      color: #2c3e50;
+    }
+
+    .dec-1 {
+      top: 20px;
+      right: 20px;
+      font-size: 120px;
+      transform: rotate(15deg);
+    }
+
+    .dec-2 {
+      bottom: 20px;
+      left: 20px;
+      font-size: 100px;
+      transform: rotate(-10deg);
+    }
+    
+    .browser-warning {
+      background: #ffebee;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #ffcdd2;
+    }
+    
+    .permission-fix {
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      display: none;
+    }
+    
+    .permission-fix.show {
+      display: block;
+    }
+    
+    .secure-badge {
+      background: #4caf50;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      display: inline-block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decoration dec-1">
+      <i class="fas fa-book-open"></i>
+    </div>
+    
+    <div class="decoration dec-2">
+      <i class="fas fa-microphone-alt"></i>
+    </div>
+    
+    <div class="app-header">
+      <div class="app-icon">
+        <i class="fas fa-book"></i>
+      </div>
+      <h1>تطبيق تحضير الدروس المتقدم</h1>
+      <div class="secure-badge">
+        <i class="fas fa-lock"></i> اتصال آمن - جاهز للكتابة الصوتية
+      </div>
+    </div>
+    
+    <div class="browser-warning" id="browserWarning">
+      <i class="fas fa-exclamation-triangle"></i> 
+      <span id="warningMessage">جاري التحقق من إعدادات الميكروفون...</span>
+      <div class="permission-fix" id="permissionFix">
+        <p><strong>حلول مقترحة:</strong></p>
+        <p>1. تأكد من منح الإذن لاستخدام الميكروفون</p>
+        <p>2. جرب استخدام متصفح Chrome على جهازك</p>
+        <p>3. تأكد من وجود ميكروفون متصل</p>
+        <p>4. جرب تحديث الصفحة (F5)</p>
+      </div>
+    </div>
+    
+    <div class="solution-box">
+      <div class="solution-header">
+        <i class="fas fa-lightbulb"></i>
+        <h3>حل مشكلة الميكروفون في Chrome</h3>
+      </div>
+      <ol class="solution-steps">
+        <li>افتح <strong>إعدادات Chrome</strong> → <strong>الإعدادات المتقدمة</strong></li>
+        <li>انتقل إلى <strong>خصوصية وأمان</strong> → <strong>إعدادات الموقع</strong></li>
+        <li>ابحث عن <strong>الميكروفون</strong> وتأكد من تفعيله</li>
+        <li>في قسم "السماح"، تحقق من وجود هذا الموقع في القائمة</li>
+        <li>إذا لم تجده، أزله من القائمة ثم أعد منح الإذن مرة أخرى</li>
+      </ol>
+    </div>
+    
+    <div class="mic-instruction">
+      <i class="fas fa-info-circle"></i> للكتابة بالصوت، انقر على أيقونة الميكروفون <i class="fas fa-microphone"></i> بجانب كل حقل وتحدث بوضوح بعد سماع الصفارة
+    </div>
+    
+    <div class="input-group">
+      <label for="subject">المادة</label>
+      <div class="input-wrapper">
+        <input type="text" id="subject" placeholder="مثلاً: تربية إسلامية">
+        <button class="mic-btn" data-target="subject" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="title">عنوان الدرس</label>
+      <div class="input-wrapper">
+        <input type="text" id="title" placeholder="مثلاً: سورة الواقعة (1–10)">
+        <button class="mic-btn" data-target="title" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="objectives">الأهداف</label>
+      <div class="input-wrapper">
+        <textarea id="objectives" rows="3" placeholder="مثلاً: تلاوة صحيحة، فهم الكلمات، استنتاج المعنى"></textarea>
+        <button class="mic-btn" data-target="objectives" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="activities">الأنشطة والشرح</label>
+      <div class="input-wrapper">
+        <textarea id="activities" rows="4" placeholder="مثلاً: قراءة جماعية، شرح كلمات، مناقشة شفوية"></textarea>
+        <button class="mic-btn" data-target="activities" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="tools">الوسائل التعليمية</label>
+      <div class="input-wrapper">
+        <textarea id="tools" rows="2" placeholder="مثلاً: مصحف، سبورة، بطاقات"></textarea>
+        <button class="mic-btn" data-target="tools" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="methods">طرق وأساليب التدريس</label>
+      <div class="input-wrapper">
+        <textarea id="methods" rows="2" placeholder="مثلاً: تعلم تعاوني، عصف ذهني، تعليم بصري"></textarea>
+        <button class="mic-btn" data-target="methods" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label for="evaluation">أسئلة للتقويم</label>
+      <div class="input-wrapper">
+        <textarea id="evaluation" rows="3" placeholder="مثلاً: ما معنى الواقعة؟ من هم أصحاب اليمين؟"></textarea>
+        <button class="mic-btn" data-target="evaluation" title="الكتابة الصوتية">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="alternative-option">
+      <h3><i class="fas fa-phone-alt"></i> خيار بديل للكتابة الصوتية</h3>
+      <p>إذا استمرت المشكلة، يمكنك استخدام تقنية بديلة للكتابة بالصوت:</p>
+      <button id="altVoiceBtn" class="alt-btn">
+        <i class="fas fa-microphone-alt"></i> تفعيل الكتابة الصوتية البديلة
+      </button>
+      <div class="status" id="altStatus"></div>
+    </div>
+    
+    <div class="buttons">
+      <button class="export-btn" onclick="exportToExcel()">
+        <i class="fas fa-file-excel"></i> تصدير إلى Excel
+      </button>
+      <button class="clear-btn" onclick="clearForm()">
+        <i class="fas fa-trash-alt"></i> مسح النموذج
+      </button>
+      <button class="save-btn" onclick="saveDraft()">
+        <i class="fas fa-save"></i> حفظ المسودة
+      </button>
+    </div>
+    
+    <div class="status" id="status"></div>
+    
+    <div class="footer">
+      <div>أداة متطورة لتحضير الدروس باللغة العربية، مناسبة للجوال والشاشات الصغيرة</div>
+      <div style="margin-top: 8px; font-size: 12px; color: #3498db;">
+        <i class="fas fa-microphone"></i> الإصدار 2.0 - تم إصلاح مشاكل الميكروفون
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // عناصر واجهة المستخدم
+    const micButtons = document.querySelectorAll('.mic-btn');
+    const statusEl = document.getElementById('status');
+    const browserWarning = document.getElementById('browserWarning');
+    const warningMessage = document.getElementById('warningMessage');
+    const altVoiceBtn = document.getElementById('altVoiceBtn');
+    const altStatus = document.getElementById('altStatus');
+    
+    // كائن التعرف على الكلام
+    let recognition;
+    let currentTarget;
+    let speechSupport = true;
+    let alternativeVoiceActive = false;
+    
+    // تهيئة التعرف على الكلام
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'ar-SA';
+        recognition.interimResults = true;
+        
+        recognition.onstart = function() {
+          statusEl.textContent = "جاري الاستماع... تحدث الآن بوضوح بعد الصفارة";
+          statusEl.style.color = "#e74c3c";
+          
+          // تشغيل صوت بدء التسجيل
+          playStartSound();
+          
+          // إضافة كلاس التسجيل إلى الزر
+          const micBtn = document.querySelector(`.mic-btn[data-target="${currentTarget}"]`);
+          micBtn.classList.add('recording');
+        };
+        
+        recognition.onresult = function(event) {
+          const transcript = Array.from(event.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+          
+          document.getElementById(currentTarget).value = transcript;
+        };
+        
+        recognition.onerror = function(event) {
+          let errorMessage = "حدث خطأ: ";
+          
+          switch(event.error) {
+            case 'not-allowed':
+              errorMessage = "تم رفض الإذن. يرجى منح إذن الميكروفون في إعدادات المتصفح.";
+              break;
+            case 'no-speech':
+              errorMessage = "لم يتم اكتشاف أي كلام. يرجى التحدث بوضوح.";
+              break;
+            case 'audio-capture':
+              errorMessage = "لم يتم العثور على ميكروفون. يرجى التأكد من توصيل الميكروفون.";
+              break;
+            default:
+              errorMessage += event.error;
+          }
+          
+          statusEl.textContent = errorMessage;
+          statusEl.style.color = "#e74c3c";
+          resetMicButton();
+          
+          // إظهار تحذير المتصفح مع حلول مقترحة
+          warningMessage.textContent = errorMessage;
+          browserWarning.style.display = 'block';
+        };
+        
+        recognition.onend = function() {
+          statusEl.textContent = "اكتمل التسجيل بنجاح!";
+          statusEl.style.color = "#27ae60";
+          resetMicButton();
+          
+          // تشغيل صوت انتهاء التسجيل
+          playEndSound();
+          
+          // إخفاء الرسالة بعد 3 ثوانٍ
+          setTimeout(() => {
+            statusEl.textContent = "";
+          }, 3000);
+        };
+        
+      } else {
+        speechSupport = false;
+        warningMessage.textContent = "عذراً، المتصفح لا يدعم ميزة التعرف على الكلام";
+        browserWarning.style.display = 'block';
+        statusEl.textContent = "عذراً، المتصفح لا يدعم ميزة التعرف على الكلام";
+        statusEl.style.color = "#e74c3c";
+      }
+    }
+    
+    // تشغيل صوت بدء التسجيل
+    function playStartSound() {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = context.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(800, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1200, context.currentTime + 0.3);
+      
+      const gainNode = context.createGain();
+      gainNode.gain.setValueAtTime(0.5, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.3);
+    }
+    
+    // تشغيل صوت انتهاء التسجيل
+    function playEndSound() {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = context.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1200, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(800, context.currentTime + 0.3);
+      
+      const gainNode = context.createGain();
+      gainNode.gain.setValueAtTime(0.5, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.3);
+    }
+    
+    // بدء التعرف على الكلام
+    function startSpeechRecognition(target) {
+      if (!speechSupport) {
+        browserWarning.style.display = 'block';
+        return;
+      }
+      
+      currentTarget = target;
+      
+      if (recognition) {
+        try {
+          // طلب الإذن قبل البدء بطريقة أكثر فعالية
+          navigator.permissions.query({name: 'microphone'})
+            .then(permissionStatus => {
+              if (permissionStatus.state === 'granted') {
+                recognition.start();
+              } else {
+                // إذا لم يكن الإذن ممنوحاً، نطلب الإذن بشكل صريح
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                  .then(stream => {
+                    // إيقاف التدفق فوراً
+                    stream.getTracks().forEach(track => track.stop());
+                    recognition.start();
+                  })
+                  .catch(err => {
+                    statusEl.textContent = "يجب منح الإذن لاستخدام الميكروفون";
+                    statusEl.style.color = "#e74c3c";
+                    browserWarning.style.display = 'block';
+                  });
+              }
+            });
+        } catch (error) {
+          statusEl.textContent = "حدث خطأ في بدء التسجيل. حاول مرة أخرى";
+          statusEl.style.color = "#e74c3c";
+        }
+      }
+    }
+    
+    // إعادة تعيين زر الميكروفون
+    function resetMicButton() {
+      const micBtn = document.querySelector(`.mic-btn[data-target="${currentTarget}"]`);
+      if (micBtn) {
+        micBtn.classList.remove('recording');
+      }
+    }
+    
+    // تصدير إلى Excel
+    function exportToExcel() {
+      const subject = document.getElementById('subject').value;
+      const title = document.getElementById('title').value;
+      const objectives = document.getElementById('objectives').value;
+      const activities = document.getElementById('activities').value;
+      const tools = document.getElementById('tools').value;
+      const methods = document.getElementById('methods').value;
+      const evaluation = document.getElementById('evaluation').value;
+      
+      if (!subject && !title) {
+        statusEl.textContent = "يرجى إدخال المادة وعنوان الدرس على الأقل";
+        statusEl.style.color = "#e74c3c";
+        return;
+      }
+      
+      const table = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: 'Arial', sans-serif; direction: rtl; }
+            table { border-collapse: collapse; width: 100%; }
+            th { background-color: #2c3e50; color: white; padding: 12px; text-align: center; border: 1px solid #ddd; }
+            td { padding: 10px; border: 1px solid #ddd; text-align: right; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+        \ufeff
+        <table border='1'>
+          <tr>
+            <th>المادة</th>
+            <th>عنوان الدرس</th>
+            <th>الأهداف</th>
+            <th>الأنشطة</th>
+            <th>الوسائل</th>
+            <th>طرق التدريس</th>
+            <th>التقويم</th>
+          </tr>
+          <tr>
+            <td>${subject || '-'}</td>
+            <td>${title || '-'}</td>
+            <td>${objectives || '-'}</td>
+            <td>${activities || '-'}</td>
+            <td>${tools || '-'}</td>
+            <td>${methods || '-'}</td>
+            <td>${evaluation || '-'}</td>
+          </tr>
+        </table>
+        </body></html>`;
+      
+      const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'تحضير_درس.xls';
+      link.click();
+      
+      statusEl.textContent = "تم التصدير بنجاح!";
+      statusEl.style.color = "#27ae60";
+      
+      setTimeout(() => {
+        statusEl.textContent = "";
+      }, 3000);
+    }
+    
+    // مسح النموذج
+    function clearForm() {
+      if (confirm('هل أنت متأكد من رغبتك في مسح جميع الحقول؟')) {
+        document.getElementById('subject').value = '';
+        document.getElementById('title').value = '';
+        document.getElementById('objectives').value = '';
+        document.getElementById('activities').value = '';
+        document.getElementById('tools').value = '';
+        document.getElementById('methods').value = '';
+        document.getElementById('evaluation').value = '';
+        
+        statusEl.textContent = "تم مسح النموذج بنجاح";
+        statusEl.style.color = "#27ae60";
+        
+        setTimeout(() => {
+          statusEl.textContent = "";
+        }, 3000);
+      }
+    }
+    
+    // حفظ المسودة
+    function saveDraft() {
+      const lessonData = {
+        subject: document.getElementById('subject').value,
+        title: document.getElementById('title').value,
+        objectives: document.getElementById('objectives').value,
+        activities: document.getElementById('activities').value,
+        tools: document.getElementById('tools').value,
+        methods: document.getElementById('methods').value,
+        evaluation: document.getElementById('evaluation').value
+      };
+      
+      localStorage.setItem('lessonDraft', JSON.stringify(lessonData));
+      
+      statusEl.textContent = "تم حفظ المسودة بنجاح!";
+      statusEl.style.color = "#27ae60";
+      
+      setTimeout(() => {
+        statusEl.textContent = "";
+      }, 3000);
+    }
+    
+    // تحميل المسودة المحفوظة
+    function loadDraft() {
+      const savedDraft = localStorage.getItem('lessonDraft');
+      if (savedDraft) {
+        const lessonData = JSON.parse(savedDraft);
+        
+        document.getElementById('subject').value = lessonData.subject || '';
+        document.getElementById('title').value = lessonData.title || '';
+        document.getElementById('objectives').value = lessonData.objectives || '';
+        document.getElementById('activities').value = lessonData.activities || '';
+        document.getElementById('tools').value = lessonData.tools || '';
+        document.getElementById('methods').value = lessonData.methods || '';
+        document.getElementById('evaluation').value = lessonData.evaluation || '';
+        
+        statusEl.textContent = "تم تحميل المسودة المحفوظة";
+        statusEl.style.color = "#3498db";
+        
+        setTimeout(() => {
+          statusEl.textContent = "";
+        }, 3000);
+      }
+    }
+    
+    // تفعيل الكتابة الصوتية البديلة
+    function initAlternativeVoice() {
+      if (annyang) {
+        annyang.setLanguage('ar');
+        
+        // تعيين الأوامر لكل حقل
+        const commands = {
+          'ادخل المادة :subject': function(subject) {
+            document.getElementById('subject').value = subject;
+          },
+          'ادخل العنوان :title': function(title) {
+            document.getElementById('title').value = title;
+          },
+          'ادخل الأهداف :objectives': function(objectives) {
+            document.getElementById('objectives').value = objectives;
+          },
+          'ادخل الأنشطة :activities': function(activities) {
+            document.getElementById('activities').value = activities;
+          },
+          'ادخل الوسائل :tools': function(tools) {
+            document.getElementById('tools').value = tools;
+          },
+          'ادخل طرق التدريس :methods': function(methods) {
+            document.getElementById('methods').value = methods;
+          },
+          'ادخل التقويم :evaluation': function(evaluation) {
+            document.getElementById('evaluation').value = evaluation;
+          }
+        };
+        
+        annyang.addCommands(commands);
+        
+        annyang.start();
+        alternativeVoiceActive = true;
+        
+        altStatus.textContent = "الكتابة الصوتية البديلة مفعّلة. قل 'ادخل المادة' ثم اسم المادة، وهكذا.";
+        altStatus.style.color = "#27ae60";
+      } else {
+        altStatus.textContent = "عذراً، المتصفح لا يدعم هذه الميزة البديلة";
+        altStatus.style.color = "#e74c3c";
+      }
+    }
+    
+    // تهيئة التطبيق عند التحميل
+    window.onload = function() {
+      // إظهار رسالة تحميل
+      statusEl.textContent = "جاري تحميل التطبيق...";
+      statusEl.style.color = "#3498db";
+      
+      setTimeout(() => {
+        initSpeechRecognition();
+        loadDraft();
+        
+        // إضافة مستمعي الأحداث لأزرار الميكروفون
+        micButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            startSpeechRecognition(target);
+          });
+        });
+        
+        // إضافة حدث للزر البديل
+        altVoiceBtn.addEventListener('click', initAlternativeVoice);
+        
+        // إخفاء رسالة التحميل
+        statusEl.textContent = "";
+        
+        // التحقق من دعم الميزة
+        if (!speechSupport) {
+          browserWarning.style.display = 'block';
+        } else {
+          browserWarning.style.display = 'none';
+        }
+      }, 1500);
+    };
+  </script>
+</body>
+</html>
